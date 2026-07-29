@@ -14,7 +14,8 @@ Everything in this project is deployed **entirely through the Cloudflare dashboa
 - Unlimited cards, each with an optional text side and/or optional image side, flippable with a click/tap.
 - Drag-and-drop reordering built with [`@dnd-kit`](https://dndkit.com/), which works reliably on both mouse and touch.
 - Direct-from-browser image uploads to Cloudinary using an unsigned upload preset (no server involved).
-- Deleting a card (or replacing its image) also deletes the old image from Cloudinary, via a signed server-side request — so removed images don't linger and eat into your storage quota.
+- Deleting a card (or replacing/removing its image) also deletes the old image from Cloudinary, via a signed server-side request — so removed images don't linger and eat into your storage quota.
+- Each card only shows an edit (✎) icon — there's no delete icon directly on the card, to avoid accidental taps. Deleting a card, or just removing its image, both happen from inside the edit modal ("Remove image" clears the image side; "Delete card" removes the whole card).
 
 ## Repository layout
 
@@ -81,7 +82,7 @@ Go to your Pages project → **Settings → Environment variables**, and add the
 | `CLOUDINARY_API_SECRET` | `AbCdEfGhIjKlMnOpQrStUvWxYz1` | From Cloudinary → Settings → API Keys. **Server-side only — never expose this in a `VITE_`-prefixed variable.** |
 | `SESSION_TTL_SECONDS` | `604800` | Optional. Session lifetime in seconds (default: 7 days). |
 
-> `VITE_`-prefixed variables are baked into the client build; the others stay server-side for the Pages Functions. Because Vite variables are embedded at build time, redeploy (or trigger a new build) after changing them.
+> `VITE_`-prefixed variables are baked into the client build; the others stay server-side for the Pages Functions. Because Vite variables (and any newly added server-side variable) only take effect on the *next* deployment, redeploy the project after adding or changing any environment variable — this applies to `CLOUDINARY_API_KEY`/`CLOUDINARY_API_SECRET` too, not just the `VITE_` ones.
 
 ## 5. Bind the KV namespace to Pages Functions (Cloudflare dashboard)
 
@@ -97,6 +98,7 @@ Go to your Pages project → **Settings → Environment variables**, and add the
 2. You'll see the **Set up your password** screen since no password exists yet. Choose one (at least 8 characters).
 3. You're now logged in. Add your first card with the **+** tile, and drag cards to reorder them.
 4. On future visits, you'll see the login screen instead.
+5. To edit or delete a card, tap the ✎ icon on the card — that opens a modal where you can change the text, change/remove the image, or delete the whole card.
 
 ## Local development (optional)
 
