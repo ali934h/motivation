@@ -5,6 +5,7 @@ export default function CardModal({ card, onClose, onSave, onDelete }) {
   const isEditing = Boolean(card);
   const [text, setText] = useState(card?.text || '');
   const [imageUrl, setImageUrl] = useState(card?.imageUrl || '');
+  const [imagePublicId, setImagePublicId] = useState(card?.imagePublicId || '');
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -15,8 +16,9 @@ export default function CardModal({ card, onClose, onSave, onDelete }) {
     setError(null);
     setUploading(true);
     try {
-      const url = await uploadImageToCloudinary(file);
+      const { url, publicId } = await uploadImageToCloudinary(file);
       setImageUrl(url);
+      setImagePublicId(publicId);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -35,7 +37,7 @@ export default function CardModal({ card, onClose, onSave, onDelete }) {
 
     setSubmitting(true);
     try {
-      await onSave({ text: text.trim(), imageUrl });
+      await onSave({ text: text.trim(), imageUrl, imagePublicId });
     } catch (err) {
       setError(err.message);
     } finally {
