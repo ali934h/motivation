@@ -1,4 +1,5 @@
 import { jsonResponse } from '../../_lib/auth.js';
+import { deleteCloudinaryImage } from '../../_lib/cloudinary.js';
 
 export async function onRequestPut(context) {
   const { request, env, params } = context;
@@ -20,6 +21,10 @@ export async function onRequestPut(context) {
   const text = typeof body.text === 'string' ? body.text.trim() : existing.text;
   const imageUrl =
     typeof body.imageUrl === 'string' ? body.imageUrl.trim() : existing.imageUrl;
+  const imagePublicId =
+    typeof body.imagePublicId === 'string'
+      ? body.imagePublicId.trim()
+      : existing.imagePublicId || '';
 
   if (!text && !imageUrl) {
     return jsonResponse(
@@ -28,7 +33,14 @@ export async function onRequestPut(context) {
     );
   }
 
-  const updated = { ...existing, text, imageUrl, updatedAt: Date.now() };
+  // If the image was replaced or removed, clean up the old Cloudinary
+  // asset so it doesn't linger and eat into storage quota.
+  const oldPublicId = existing.imagePublicId || '';
+  if (oldPublicId && oldPublicId !== imagePublicId) {
+    await deleteCloudinaryImage(env, oldPublicId);
+  }
+
+  const updated = { ...existing, text, imageUrl, imagePublicId, updatedAt: Date.now() };
   await env.MOTIVATION_KV.put(`card:${id}`, JSON.stringify(updated));
 
   return jsonResponse({ card: updated });
@@ -41,6 +53,11 @@ export async function onRequestDelete(context) {
   const existingRaw = await env.MOTIVATION_KV.get(`card:${id}`);
   if (!existingRaw) {
     return jsonResponse({ error: 'Card not found' }, { status: 404 });
+  }
+
+  const existing = JSON.parse(existingRaw);
+  if (existing.imagePublicId) {
+    await deleteCloudinaryImage(env, existing.imagePublicId);
   }
 
   await env.MOTIVATION_KV.delete(`card:${id}`);
