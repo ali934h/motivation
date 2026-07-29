@@ -106,3 +106,5 @@ Note that Pages Functions (the `/api/*` routes) aren't served by plain `vite dev
 - The panel is only reachable at the secret path you configure — both on the client route and via a required `X-Panel-Secret` header checked by the API middleware.
 - Session cookies are `HttpOnly`, `Secure`, and `SameSite=Strict`.
 - Failed login attempts are rate-limited per IP (5 attempts per 10-minute window).
+
+<!-- deploy-trigger: 2026-07-29 -->
