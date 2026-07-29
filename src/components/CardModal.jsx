@@ -26,6 +26,15 @@ export default function CardModal({ card, onClose, onSave, onDelete }) {
     }
   }
 
+  function handleRemoveImage(e) {
+    // Only clears the image locally; the actual Cloudinary asset is
+    // deleted server-side once Save is pressed (the API compares the
+    // card's old vs. new imagePublicId and deletes the old one).
+    e.stopPropagation();
+    setImageUrl('');
+    setImagePublicId('');
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     setError(null);
@@ -77,6 +86,17 @@ export default function CardModal({ card, onClose, onSave, onDelete }) {
             <span>{uploading ? 'Uploading…' : imageUrl ? 'Change image' : 'Click to upload an image'}</span>
             <input type="file" accept="image/*" onChange={handleFileChange} disabled={uploading} />
           </div>
+          {imageUrl && (
+            <button
+              type="button"
+              className="secondary-btn"
+              style={{ width: '100%', marginTop: -10, marginBottom: 18 }}
+              onClick={handleRemoveImage}
+              disabled={uploading}
+            >
+              Remove image
+            </button>
+          )}
 
           {error && <p className="form-error">{error}</p>}
 
