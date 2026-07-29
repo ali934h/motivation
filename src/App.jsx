@@ -72,10 +72,6 @@ function Panel() {
     closeModal();
   }
 
-  async function handleDeleteFromCard(id) {
-    await cardsState.removeCard(id);
-  }
-
   return (
     <div className="app-shell">
       <header className="top-bar">
@@ -96,7 +92,6 @@ function Panel() {
             onReorder={cardsState.reorder}
             onAdd={openAddModal}
             onEdit={openEditModal}
-            onDelete={handleDeleteFromCard}
           />
         )}
       </main>
