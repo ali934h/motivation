@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap');
 
 :root {
   --bg-void: #0b0d10;
@@ -11,8 +12,12 @@
   --accent-dim: #97ad2e;
   --danger: #ff6b6b;
 
-  --font-display: 'Fraunces', serif;
-  --font-body: 'Inter', system-ui, sans-serif;
+  /* Vazirmatn is listed last in each stack on purpose: browsers pick the
+     first font in the stack that actually has glyphs for each character,
+     so Latin text renders in Fraunces/Inter and Persian text automatically
+     falls through to Vazirmatn, without any language detection in JS. */
+  --font-display: 'Fraunces', 'Vazirmatn', serif;
+  --font-body: 'Inter', 'Vazirmatn', system-ui, sans-serif;
 
   --radius-md: 10px;
   --radius-lg: 16px;
@@ -57,13 +62,13 @@ textarea:focus-visible {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 24px;
+  padding: 16px 20px;
   border-bottom: 1px solid var(--border-subtle);
 }
 
 .brand {
   font-family: var(--font-display);
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 600;
   letter-spacing: 0.01em;
 }
@@ -90,10 +95,19 @@ textarea:focus-visible {
 
 .main-content {
   flex: 1;
-  padding: 32px 24px 64px;
+  /* Generous side padding (especially on small screens) so there's always
+     a safe strip of empty space to start a scroll gesture from, and cards
+     never sit flush against the viewport edge. */
+  padding: 20px 16px 56px;
   max-width: 1280px;
   width: 100%;
   margin: 0 auto;
+}
+
+@media (min-width: 480px) {
+  .main-content {
+    padding: 28px 24px 64px;
+  }
 }
 
 /* Auth screens */
@@ -180,26 +194,48 @@ textarea:focus-visible {
 /* Card grid */
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 18px;
+  /* Small, roughly-square-ish tiles by default so several fit per row even
+     on narrow phones. */
+  grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+  gap: 12px;
+}
+
+@media (min-width: 420px) {
+  .card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 14px;
+  }
 }
 
 @media (min-width: 640px) {
   .card-grid {
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 16px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 18px;
   }
 }
 
 .motivation-card {
   position: relative;
-  aspect-ratio: 3 / 4;
+  /* Landscape orientation: wider than it is tall. */
+  aspect-ratio: 4 / 3;
   border-radius: var(--radius-lg);
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
   cursor: pointer;
   overflow: hidden;
   user-select: none;
-  touch-action: none;
+  /* `manipulation` (not `none`) lets a touch that starts on a card still be
+     recognized by the browser as a normal vertical scroll gesture. Combined
+     with the TouchSensor's activation delay in CardGrid.jsx, a quick swipe
+     scrolls the page, while a deliberate press-and-hold starts a drag. */
+  touch-action: manipulation;
 }
 
 .motivation-card.dragging {
@@ -211,12 +247,10 @@ textarea:focus-visible {
   inset: 0;
   display: flex;
   flex-direction: column;
-  padding: 18px;
-}
-
-.card-face.text-face {
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
+  padding: 14px;
+  text-align: center;
 }
 
 .card-face.image-face {
@@ -232,30 +266,40 @@ textarea:focus-visible {
 
 .card-text {
   font-family: var(--font-display);
-  font-size: 18px;
+  font-size: 15px;
   line-height: 1.4;
   color: var(--text-primary);
   white-space: pre-wrap;
   word-break: break-word;
+  text-align: center;
+  margin: 0;
+}
+
+@media (min-width: 640px) {
+  .card-text {
+    font-size: 17px;
+  }
 }
 
 .card-empty-hint {
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: 12px;
+  text-align: center;
+  margin: 0;
 }
 
 .card-actions {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 8px;
+  right: 8px;
   display: flex;
-  gap: 6px;
+  gap: 5px;
   z-index: 2;
 }
 
 .card-icon-btn {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.15);
   background: rgba(11, 13, 16, 0.65);
@@ -265,7 +309,7 @@ textarea:focus-visible {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .card-icon-btn:hover {
@@ -274,7 +318,7 @@ textarea:focus-visible {
 
 .card-side-indicator {
   position: absolute;
-  bottom: 10px;
+  bottom: 8px;
   left: 0;
   right: 0;
   display: flex;
@@ -295,7 +339,7 @@ textarea:focus-visible {
 }
 
 .add-card-tile {
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 4 / 3;
   border-radius: var(--radius-lg);
   border: 1.5px dashed var(--border-subtle);
   background: transparent;
@@ -304,7 +348,7 @@ textarea:focus-visible {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 40px;
+  font-size: 32px;
   font-weight: 400;
   transition: border-color 0.15s ease, color 0.15s ease;
 }
@@ -354,6 +398,7 @@ textarea:focus-visible {
   font-family: var(--font-display);
   font-size: 20px;
   margin: 0 0 20px;
+  text-align: center;
 }
 
 .textarea-input {
