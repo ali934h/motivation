@@ -231,11 +231,11 @@ textarea:focus-visible {
   cursor: pointer;
   overflow: hidden;
   user-select: none;
-  /* `manipulation` (not `none`) lets a touch that starts on a card still be
-     recognized by the browser as a normal vertical scroll gesture. Combined
-     with the TouchSensor's activation delay in CardGrid.jsx, a quick swipe
-     scrolls the page, while a deliberate press-and-hold starts a drag. */
-  touch-action: manipulation;
+  /* Back to `none`: this is what made drag-and-drop feel reliable on
+     mobile. The scroll issue was actually caused by cards sitting flush
+     against the viewport edge (no safe margin to start a scroll from),
+     which is fixed above via .main-content padding, not via touch-action. */
+  touch-action: none;
 }
 
 .motivation-card.dragging {
