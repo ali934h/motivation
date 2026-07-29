@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-export default function Card({ card, onEdit, onDelete }) {
+export default function Card({ card, onEdit }) {
   const [showingImage, setShowingImage] = useState(Boolean(card.imageUrl) && !card.text);
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
@@ -48,18 +48,6 @@ export default function Card({ card, onEdit, onDelete }) {
           }}
         >
           ✎
-        </button>
-        <button
-          type="button"
-          className="card-icon-btn"
-          aria-label="Delete card"
-          onPointerDown={stop}
-          onClick={(e) => {
-            stop(e);
-            onDelete(card.id);
-          }}
-        >
-          ✕
         </button>
       </div>
 
