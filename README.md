@@ -14,6 +14,7 @@ Everything in this project is deployed **entirely through the Cloudflare dashboa
 - Unlimited cards, each with an optional text side and/or optional image side, flippable with a click/tap.
 - Drag-and-drop reordering built with [`@dnd-kit`](https://dndkit.com/), which works reliably on both mouse and touch.
 - Direct-from-browser image uploads to Cloudinary using an unsigned upload preset (no server involved).
+- Deleting a card (or replacing its image) also deletes the old image from Cloudinary, via a signed server-side request — so removed images don't linger and eat into your storage quota.
 
 ## Repository layout
 
@@ -21,6 +22,7 @@ Everything in this project is deployed **entirely through the Cloudflare dashboa
 functions/          Cloudflare Pages Functions (the API)
   _middleware.js     Guards the secret path + session checks
   _lib/auth.js       Password hashing, sessions, rate limiting helpers
+  _lib/cloudinary.js Signed Cloudinary image deletion helper
   api/auth/          setup, login, logout, session, status endpoints
   api/cards/         list/create, update/delete, reorder endpoints
 src/                 React front-end
@@ -33,7 +35,7 @@ src/                 React front-end
 
 - A GitHub account with this repository pushed to it.
 - A Cloudflare account (free tier is enough).
-- A Cloudinary account (free tier) with an **unsigned upload preset**.
+- A Cloudinary account (free tier) with an **unsigned upload preset**, and an **API Key + API Secret**.
 
 ### Create the Cloudinary unsigned upload preset
 
@@ -41,6 +43,12 @@ src/                 React front-end
 2. Go to **Settings → Upload** → **Upload presets** → **Add upload preset**.
 3. Set **Signing Mode** to **Unsigned**.
 4. Save, and note the **preset name** and your **Cloud name** (shown at the top of the dashboard).
+
+### Get your Cloudinary API Key and API Secret
+
+1. In the Cloudinary dashboard, go to **Settings → API Keys**.
+2. Copy the **API Key** and **API Secret** shown there (or generate a new key pair).
+3. These are used server-side only, so the app can delete images from Cloudinary when a card is removed or its image is replaced. **Never** put these in a `VITE_`-prefixed variable or in any client-side code — only the plain (non-`VITE_`) environment variables described below.
 
 ## 2. Create the KV namespace (Cloudflare dashboard)
 
@@ -69,6 +77,8 @@ Go to your Pages project → **Settings → Environment variables**, and add the
 | `VITE_CLOUDINARY_CLOUD_NAME` | `dxxxxxx` | From your Cloudinary dashboard. |
 | `VITE_CLOUDINARY_UPLOAD_PRESET` | `motivation_unsigned` | The unsigned preset name you created. |
 | `PANEL_SECRET_PATH` | `panel-9f2a7c` | **Must be identical** to `VITE_PANEL_PATH` above — this is what the API checks server-side. |
+| `CLOUDINARY_API_KEY` | `123456789012345` | From Cloudinary → Settings → API Keys. Used server-side only, to delete images. |
+| `CLOUDINARY_API_SECRET` | `AbCdEfGhIjKlMnOpQrStUvWxYz1` | From Cloudinary → Settings → API Keys. **Server-side only — never expose this in a `VITE_`-prefixed variable.** |
 | `SESSION_TTL_SECONDS` | `604800` | Optional. Session lifetime in seconds (default: 7 days). |
 
 > `VITE_`-prefixed variables are baked into the client build; the others stay server-side for the Pages Functions. Because Vite variables are embedded at build time, redeploy (or trigger a new build) after changing them.
@@ -106,5 +116,4 @@ Note that Pages Functions (the `/api/*` routes) aren't served by plain `vite dev
 - The panel is only reachable at the secret path you configure — both on the client route and via a required `X-Panel-Secret` header checked by the API middleware.
 - Session cookies are `HttpOnly`, `Secure`, and `SameSite=Strict`.
 - Failed login attempts are rate-limited per IP (5 attempts per 10-minute window).
-
-<!-- deploy-trigger: 2026-07-29 -->
+- Cloudinary's API Secret is used only in Pages Functions (server-side) to sign the image-deletion request; it's never sent to or embedded in the browser bundle.
