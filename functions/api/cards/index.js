@@ -28,9 +28,10 @@ export async function onRequestPost(context) {
     return jsonResponse({ error: 'Invalid request body' }, { status: 400 });
   }
 
-  const { text, imageUrl } = body;
+  const { text, imageUrl, imagePublicId } = body;
   const trimmedText = typeof text === 'string' ? text.trim() : '';
   const finalImageUrl = typeof imageUrl === 'string' ? imageUrl.trim() : '';
+  const finalImagePublicId = typeof imagePublicId === 'string' ? imagePublicId.trim() : '';
 
   if (!trimmedText && !finalImageUrl) {
     return jsonResponse(
@@ -44,6 +45,10 @@ export async function onRequestPost(context) {
     id,
     text: trimmedText,
     imageUrl: finalImageUrl,
+    // Cloudinary's public_id for the uploaded image, so it can be deleted
+    // from Cloudinary later (via the destroy API) when the card is removed
+    // or its image is replaced. Empty when there's no image.
+    imagePublicId: finalImagePublicId,
     createdAt: Date.now(),
   };
 
