@@ -14,7 +14,7 @@ import {
 import Card from './Card.jsx';
 import AddCardButton from './AddCardButton.jsx';
 
-export default function CardGrid({ cards, onReorder, onAdd, onEdit, onDelete }) {
+export default function CardGrid({ cards, onReorder, onAdd, onEdit }) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 8 },
@@ -54,7 +54,7 @@ export default function CardGrid({ cards, onReorder, onAdd, onEdit, onDelete }) 
       <SortableContext items={cards.map((c) => c.id)} strategy={rectSortingStrategy}>
         <div className="card-grid">
           {cards.map((card) => (
-            <Card key={card.id} card={card} onEdit={onEdit} onDelete={onDelete} />
+            <Card key={card.id} card={card} onEdit={onEdit} />
           ))}
           <AddCardButton onClick={onAdd} />
         </div>
