@@ -14,6 +14,7 @@
 - تعداد نامحدود کارت، هر کدوم با طرف متن اختیاری و/یا طرف تصویر اختیاری، که با کلیک/لمس ورق می‌خوره.
 - جابجایی کارت‌ها با درگ‌اند‌دراپ که با [`@dnd-kit`](https://dndkit.com/) پیاده‌سازی شده و روی موس و لمس هر دو قابل‌اعتماده.
 - آپلود مستقیم تصویر از مرورگر به Cloudinary با استفاده از یک Unsigned Upload Preset (بدون واسطه شدن سرور).
+- با حذف یک کارت (یا جایگزین کردن تصویرش)، تصویر قدیمی از Cloudinary هم به‌صورت خودکار حذف می‌شه (از طریق یک درخواست امضاشده‌ی سمت سرور)، تا تصاویر اضافه باقی نمونن و ظرفیت ذخیره‌سازی رو اشغال نکنن.
 
 ## ساختار ریپو
 
@@ -21,6 +22,7 @@
 functions/          Cloudflare Pages Functions (بخش API)
   _middleware.js     بررسی مسیر مخفی + بررسی سشن
   _lib/auth.js       توابع کمکی هش پسورد، سشن، rate limiting
+  _lib/cloudinary.js تابع کمکی حذف امضاشده‌ی تصویر از Cloudinary
   api/auth/          اندپوینت‌های setup، login، logout، session، status
   api/cards/         اندپوینت‌های لیست/ایجاد، ویرایش/حذف، تغییر ترتیب
 src/                 فرانت‌اند React
@@ -33,7 +35,7 @@ src/                 فرانت‌اند React
 
 - یک اکانت گیت‌هاب که این ریپو در اون پوش شده باشه.
 - یک اکانت Cloudflare (پلن رایگان کافیه).
-- یک اکانت Cloudinary (پلن رایگان) با یک **Unsigned Upload Preset**.
+- یک اکانت Cloudinary (پلن رایگان) با یک **Unsigned Upload Preset** و یک جفت **API Key + API Secret**.
 
 ### ساخت Unsigned Upload Preset در Cloudinary
 
@@ -41,6 +43,12 @@ src/                 فرانت‌اند React
 ۲. به مسیر **Settings → Upload** بروید → **Upload presets** → **Add upload preset**.
 ۳. گزینه **Signing Mode** رو روی **Unsigned** بذارید.
 ۴. ذخیره کنید و **اسم preset** و همچنین **Cloud name** (که بالای داشبورد نمایش داده می‌شه) رو یادداشت کنید.
+
+### دریافت API Key و API Secret از Cloudinary
+
+۱. در داشبورد Cloudinary، به مسیر **Settings → API Keys** بروید.
+۲. مقادیر **API Key** و **API Secret** رو کپی کنید (یا یک جفت جدید بسازید).
+۳. این مقادیر فقط سمت سرور استفاده می‌شن تا اپلیکیشن بتونه هنگام حذف یا جایگزینی تصویر یک کارت، اون رو از Cloudinary هم حذف کنه. **هرگز** این‌ها رو در یک متغیر با پیشوند `VITE_` یا در کد سمت کلاینت قرار ندید — فقط از متغیرهای محیطی معمولی (بدون `VITE_`) که در بخش بعد توضیح داده شده استفاده کنید.
 
 ## ۲. ساخت KV namespace (از طریق داشبورد Cloudflare)
 
@@ -69,6 +77,8 @@ src/                 فرانت‌اند React
 | `VITE_CLOUDINARY_CLOUD_NAME` | `dxxxxxx` | از داشبورد Cloudinary خودتون. |
 | `VITE_CLOUDINARY_UPLOAD_PRESET` | `motivation_unsigned` | اسم Unsigned Preset که ساختید. |
 | `PANEL_SECRET_PATH` | `panel-9f2a7c` | **باید دقیقاً برابر** با `VITE_PANEL_PATH` بالا باشه — این مقداریه که سمت سرور توسط API بررسی می‌شه. |
+| `CLOUDINARY_API_KEY` | `123456789012345` | از Cloudinary → Settings → API Keys. فقط سمت سرور برای حذف تصاویر استفاده می‌شه. |
+| `CLOUDINARY_API_SECRET` | `AbCdEfGhIjKlMnOpQrStUvWxYz1` | از Cloudinary → Settings → API Keys. **فقط سمت سرور — هرگز این رو در یک متغیر با پیشوند `VITE_` قرار ندید.** |
 | `SESSION_TTL_SECONDS` | `604800` | اختیاری. طول عمر سشن به ثانیه (پیش‌فرض: ۷ روز). |
 
 > متغیرهایی که با `VITE_` شروع می‌شن در زمان بیلد داخل کد فرانت‌اند قرار می‌گیرن؛ بقیه فقط سمت سرور (Pages Functions) در دسترس هستن. چون متغیرهای Vite در زمان بیلد جاسازی می‌شن، بعد از تغییرشون باید دوباره دیپلوی (یا بیلد جدید) انجام بدید.
@@ -106,3 +116,4 @@ npm run dev
 - پنل فقط از طریق مسیر مخفی‌ای که تنظیم می‌کنید در دسترسه — هم در مسیر سمت کلاینت و هم از طریق هدر الزامی `X-Panel-Secret` که توسط middleware سمت API بررسی می‌شه.
 - کوکی‌های سشن به‌صورت `HttpOnly`، `Secure`، و `SameSite=Strict` تنظیم می‌شن.
 - تلاش‌های ناموفق ورود بر اساس IP محدود می‌شن (۵ تلاش در بازه ۱۰ دقیقه‌ای).
+- API Secret مربوط به Cloudinary فقط در Pages Functions (سمت سرور) برای امضای درخواست حذف تصویر استفاده می‌شه؛ هرگز به مرورگر ارسال یا در باندل کلاینت جاسازی نمی‌شه.
